@@ -6,7 +6,7 @@ export default {
     isLogin: false,
     user:{
         // 曲留兵
-        guid:"58b77e6f9f5d0113e8f0f1cc",
+        guid: "58ace6cf61607c55e0865aa2",//"58b77e6f9f5d0113e8f0f1cc",
         userId: 847, // 用户Id
         name: 'QLB',  // 用户名
         avatar: null,  //头像
