@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        target:'http://192.168.1.7:8030/',
+        target:'http://192.168.1.115:9023/',
         //target: 'http://des.cifi.com.cn:8035/',//'http://192.168.1.159:9029',//设置你调用的接口域名和端口号 别忘了加http
         changeOrigin: true,
         secure: false,

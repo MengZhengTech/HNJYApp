@@ -4,11 +4,11 @@
 <template>
     <div class="fullScreen">
         <HeaderBar title="登录" :showBackBtn="false"></HeaderBar>
-        <BodyContent class="container" :showBottomPadding="false">
+        <BodyContent :showBottomPadding="false">
             <div slot='content'>
                 <!-- logo -->
                 <div class="logo">
-                  <img src="../assets/images/projLogo/xh.jpg" width="50%"/>
+                    <img src="../assets/images/projLogo/hnjy.png" width="50%"/>
                 </div>
                 <!-- userName & Password -->
                 <div>
@@ -72,6 +72,7 @@
                             loginName: data.loginName,
                             guid: data.guid,
                         };
+                        globalData.setStorage('userInfo',data);
                         this.$router.push({name:'Flow'});
                     }else{
                         this.$vux.toast.text(data.Message, 'bottom');

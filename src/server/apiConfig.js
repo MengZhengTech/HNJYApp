@@ -5,10 +5,17 @@
 const useStaticData = false;
 const serverDebug = 'http://192.168.1.19:8000/';
 const serverRelease = 'http://192.168.1.178:9012/';
-//const companyServer = 'https://bird.ioliu.cn/v1/?url=http://192.168.1.159:9023/';
+const companyServer = 'https://bird.ioliu.cn/v1/?url=http://61.136.122.228:82/'; //建业正式地址
 //const companyServer = 'http://192.168.1.159:9023/';
-const companyServer = '/api';
-const webViewServer = 'http://192.168.1.159:9023/';
+//const companyServer = '/api';
+//const companyServer = 'https://bird.ioliu.cn/v1/?url=http://192.168.1.115:9023/';
+//const webViewServer = 'http://192.168.1.115:9023/';  // 测试
+const webViewServer = 'http://61.136.122.228:82/';  // 正式
+
+/**
+ *  build时需要更改本页的 companyServer  webViewServer 切换为正式的数据
+ *
+ */
 export default {
     companyServer,
     webViewServer,
@@ -55,6 +62,7 @@ export default {
     TurnOnToUser:'/Home/TurnOnToUser/', // 转办
     BackSpaceAction:'/Home/BackSpaceAction', // 回退
     CirculateToUser:'/Home/CirculateToUser/', // 知会
+    Trans2Standby: '/Home/SaveStepUserDraft/', // 转存待办 参数 flowInstanceId  ｛remark，stepId｝
     // 知会 参数
     // flowId: this.props.auditData.flowId,
     // givenUserIds: Object.keys(this.state.selectedUsers.toObject()).join(','),

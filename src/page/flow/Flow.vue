@@ -4,8 +4,8 @@
         <BodyContent :showBottomPadding="true">
             <div slot="content" class="fullScreen">
                 <tab v-model="tabIndex">
-                    <tab-item selected>待审流程</tab-item>
-                    <tab-item>已审流程</tab-item>
+                    <tab-item @on-item-click="changeFlowItem">待审流程</tab-item>
+                    <tab-item @on-item-click="changeFlowItem">已审流程</tab-item>
                     <!--<tab-item>待发流程</tab-item>-->
                     <!--<tab-item>已发流程</tab-item>-->
                 </tab>
@@ -39,18 +39,31 @@ import { Tab, TabItem, Swiper, SwiperItem } from 'vux'
 export default {
     data(){
         return {
-            tabIndex:0,
+            tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
             tabSelected:1
+        }
+    },
+    methods:{
+        /**
+         * 记录当前选中的Tab
+         * @param index
+         */
+        changeFlowItem:function(index){
+            globalData.setStorage('flowTabIndex',index);
         }
     },
     beforeMount(){
         globalData.tabSelected = this.tabSelected;
-        if(this.$route.query.guid){
+        if(this.$route.query.guid && globalData.isWebView){
             let loginUser = globalData.user;
             loginUser.guid = this.$route.query.guid;
             loginUser.userId = this.$route.query.userId;
             loginUser.name = this.$route.query.name;
-        } else{
+            console.log('路劲上的数据');
+            console.log(loginUser);
+            globalData.setStorage('userInfo',loginUser);
+        } else if(globalData.isWebView){ // 检查是否有数据
+            this.$router.push({name:'Login'});
             // console.log("没有获取到用户guid");
             // console.log(this.$route.query)
         }

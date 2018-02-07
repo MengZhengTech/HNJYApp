@@ -5,24 +5,22 @@
             <div slot="flowInfo" v-if="flowContent.showFields.length > 0">
                 <group class="weui-group p-flowInfoContent">
                     <cell v-for="(item,index) in flowContent.showFields" :key="index"
-                        :title="item.showName" :inline-desc="item.showValue.replace(/<[^>]+>/g, '')"></cell>
-                </group>
+                        :title="item.showName">
+                        <div slot="inline-desc" v-html="item.showValue"></div>
+                    </cell>
+                </group><!--.replace(/<[^>]+>/g, '').replace(/&nbsp;/g,'')-->
             </div>
             <div slot="flowAttachment" v-if="flowContent.fileList.length > 0">
                 <div class="p-title">相关附件</div>
-                <!--<group class="p-no-group-top">-->
-                    <!--<cell v-for="(item,index) in flowContent.fileList" :key="index"-->
-                        <!--:title="item.name + item.ext">-->
-                        <!--<x-button :class="previewerShowClass(item.ext)" type="warn" :mini="true" @click.native="goFlowAttachment(item.name,item.url,item.ext,item.onlineFilePath)">查看</x-button>-->
-                    <!--</cell>-->
-                <!--</group>-->
                 <grid :cols="3">
-                    <grid-item v-for="(item,index) in flowContent.fileList" :key="index" @click.native="goFlowAttachment(item)">
-                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file"></i>
+                    <grid-item class="p-file-grid-item" v-for="(item,index) in flowContent.fileList" :key="index">
+                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file" @click="goFlowAttachment(item)"></i>
                         <span slot="label">{{item.name + item.ext}}</span>
+                        <a v-if="canDownload(item)" mini plain class="mt5" :href="item.url">下载</a>
                     </grid-item>
                 </grid>
             </div>
+            <!-- 审批操作按钮 -->
             <div slot="flowOperation">
                 <div class="fixedBottom" v-if="type == 1">
                     <x-button type="warn" @click.native="goFlowOpinion">查看审批意见</x-button>
@@ -45,7 +43,7 @@
                 </div>
             </div>
         </FlowTemplate>
-        <!--  -->
+        <!-- 表格显示 -->
         <popup height="100%" v-model="showPopup">
             <x-header :left-options="{showBack: false}" style="width:100%;position:absolute;left:0;top:0;z-index:100;">
                 {{curPopupTitle}}
@@ -53,11 +51,13 @@
             </x-header>
             <BodyContent :showBottomPadding="false">
                 <iframe v-if="curTableUrl" slot="content" :src="curTableUrl" width="100%" height="100%" frameborder="0"></iframe>
-                <div v-else slot="content">暂无数据</div>
+                <div v-else slot="content" class="p-no-data-panel">
+                    <divider>文件未上传成功！请稍后重试</divider>
+                </div>
             </BodyContent>
         </popup>
         <div v-transfer-dom>
-            <previewer :list="picList" ref="previewer" :options="options"></previewer>
+            <previewer @on-close="picClose" :list="picList" ref="previewer" :options="options"></previewer>
         </div>
         <!-- 附件弹层 -->
         <popup height="100%" v-model="showFilePopup">
@@ -68,11 +68,25 @@
             <BodyContent :showBottomPadding="false">
                 <!--<div v-else slot="content">暂无数据</div>-->
                 <grid :cols="3" slot="content">
-                    <grid-item v-for="(item,index) in curFolderFiles" :key="index" @click.native="goFlowAttachment(item)">
-                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file"></i>
+                    <grid-item class="p-file-grid-item" v-for="(item,index) in curFolderFiles" :key="index">
+                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file" @click="goFlowAttachment(item)"></i>
                         <span slot="label">{{item.name + item.ext}}</span>
+                        <a v-if="canDownload(item)" mini plain class="mt5" :href="item.url">下载</a>
                     </grid-item>
                 </grid>
+            </BodyContent>
+        </popup>
+        <!-- 附件预览 -->
+        <popup height="100%" v-model="showFileReaderPopup">
+            <x-header :left-options="{showBack: false}" style="width:100%;position:absolute;left:0;top:0;z-index:100;">
+                {{curShowFileName}}
+                <a slot="right" href="javascript:;" @click="closeFileReaderPopup"><i class="fa fa-close"></i></a>
+            </x-header>
+            <BodyContent :showBottomPadding="false">
+                <iframe style="border: none;" width="100%" height="100%" slot="content" v-if="curFileReaderPath" :src="curFileReaderPath" frameborder="0"></iframe>
+                <div v-else slot="content" class="p-no-data-panel">
+                    <divider>文件未上传成功！请稍后重试</divider>
+                </div>
             </BodyContent>
         </popup>
     </div>
@@ -85,13 +99,12 @@ import TableView from '@/components/common/TableViewReader';
 import apiConfig from '../../../server/apiConfig';
 import axios from 'axios';
 import globalData from '../../../server/globalData';
-import { Group, Cell, XButton, Flexbox, FlexboxItem, Popup, XHeader, Previewer, TransferDom, Grid, GridItem, GroupTitle } from 'vux';
+import { Group, Cell, XButton, Flexbox, FlexboxItem, Popup, XHeader, Previewer, TransferDom, Grid, GridItem, GroupTitle, Divider } from 'vux';
 export default {
     directives: {
         TransferDom
     },
     computed: {
-
     },
     data(){
         return{
@@ -113,6 +126,10 @@ export default {
             picList: [], // 查看附件 图片数组
             breadPath: [], // 文件夹面包屑
             curFolderFiles: [], //
+            curShowFileName: '', // pdf附件预览名称
+            curFileReaderPath: '',
+            showFileReaderPopup: false,
+            stepRemark: '', // 转存待办 内容
             options: {
                 getThumbBoundsFn (index) {
                     // find thumbnail element
@@ -124,7 +141,7 @@ export default {
                     return {x: rect.left, y: rect.top + pageYScroll, w: rect.width}
                 }
             }
-          }
+        }
     },
     methods:{
         getFlowContent(){
@@ -138,6 +155,7 @@ export default {
                     +'&referFieldValue='+this.referFieldValue
                     +'&userId=' + globalData.user.guid)
                 .then(res=>{
+                    console.log(res);
                     this.flowContent = res.data;
                     this.actList = res.data.actList;
                     this.flowId = res.data.flowId;
@@ -145,6 +163,7 @@ export default {
                     this.stepId = res.data.stepId;
                     this.loading = false;
                     this.$vux.loading.hide();
+                    globalData.setStorage('curFlowContentInfo', res.data, true);
                 }).catch(err=>{
                     console.log(err);
                     this.loading = false;
@@ -186,12 +205,14 @@ export default {
                     this.picList = [];
                 }
                 this.picList.push({
-                  src: item.onlineFilePath,
-                  w: 800, h: 400
+                    src: item.onlineFilePath,
                 });
                 this.$refs.previewer.show(0);
             }else if(globalData.fileType.other.indexOf(item.ext.toLowerCase())!== -1){ // office pdf
-                console.log(item)
+                this.curShowFileName = item.name;
+
+                this.curFileReaderPath = item.onlineShowUrl;
+                this.showFileReaderPopup = true;
             }else{ // 未知文件格式
                 this.$vux.alert.show({
                     title: '未知文件类型',
@@ -204,14 +225,7 @@ export default {
             globalData.flow.flowId = this.flowId;
             globalData.flow.flowInstanceId = this.flowInstanceId;
             globalData.flow.stepId = this.stepId;
-            this.$router.push({name:'FlowCheck',query:{
-                // flowId:this.flowId,
-                // flowInstanceId: this.flowInstanceId,
-                // stepId: this.stepId,
-                // tableName:this.tableName,
-                // referFieldName:this.referFieldName,
-                // referFieldValue:this.referFieldValue,
-            }});
+            this.$router.push({name:'FlowCheck',query:{data:this.flowContent}});
         },
         startFlow(){
             // 发起流程
@@ -288,17 +302,38 @@ export default {
                     this.$vux.loading.hide();
                 });
             }
-        }
+        },
+        // 关闭预览弹窗
+        closeFileReaderPopup:function(){
+            this.showFileReaderPopup = false;
+            this.curFileReaderPath = "";
+        },
+        canDownload:function(item){
+            return item.ext === "folder"?false:true;
+        },
+        downloadFile(item){
+            console.log(item)
+        },
+        /**
+         * 防止图片缓存
+         */
+        picClose(){
+            this.picList = [];
+        },
     },
     beforeMount(){
-        this.tableName = this.$route.query.tableName;
-        this.referFieldName = this.$route.query.referFieldName;
-        this.referFieldValue = this.$route.query.referFieldValue;
-        this.type = this.$route.query.type;
-        this.getFlowContent();
+        const initData = JSON.parse(globalData.getStorage('curFlowInfo').data);
+
+        this.tableName = this.$route.query.tableName || initData.tableName;
+        this.referFieldName = this.$route.query.referFieldName || initData.referFieldName;
+        this.referFieldValue = this.$route.query.referFieldValue || initData.referFieldValue;
+        this.type = this.$route.query.type || initData.type;
+        if(globalData.beforeLoadCheckUser()){
+            this.getFlowContent();
+        }
     },
     components:{
-        HeaderBar, FlowTemplate, Group,
+        HeaderBar, FlowTemplate, Group, Divider,
         Cell, XButton, XHeader, BodyContent,
         Flexbox, FlexboxItem, Popup, TableView,
         Previewer, Grid, GridItem, GroupTitle,

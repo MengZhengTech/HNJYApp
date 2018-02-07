@@ -65,6 +65,7 @@ export default {
             stepId:null,    // 当前步骤Id
             actType:null,
             comment:'',     // 审批意见
+            flowContentData: '',
             givenUser:null,
             loading:false,
         }
@@ -98,14 +99,14 @@ export default {
             // console.log(typeof type);
             switch(type){
                 case '1': // 会签确认
-                    self.doActions(apiConfig.doAction,2,1);
+                    self.doActions(apiConfig.doAction,{actId: 2, attitude: 1});
                     break;
                 case '2': // 通过
                     this.$vux.confirm.show({
                         title:'请确认审批操作',
                         content:'您选择的审批操作为“通过”',
                         onConfirm(){
-                            self.doActions(apiConfig.doAction,3,1)
+                            self.doActions(apiConfig.doAction,{actId: 3, attitude: 1})
                         },
                     });
                     break;
@@ -114,7 +115,7 @@ export default {
                         title:'请确认审批操作',
                         content:'您选择的审批操作为“驳回”',
                         onConfirm(){
-                            self.doActions(apiConfig.doAction,4,0)
+                            self.doActions(apiConfig.doAction,{actId: 4, attitude: 0})
                         },
                     });
                     break;
@@ -130,7 +131,7 @@ export default {
                         title:'请确认审批操作',
                         content:'您选择的审批操作为“终止”',
                         onConfirm(){
-                            self.doActions(apiConfig.ForceCompleteInstance,0);
+                            self.doActions(apiConfig.ForceCompleteInstance,{actId: 0});
                         },
                     });
                     break;
@@ -145,46 +146,66 @@ export default {
                         title:'请确认审批操作',
                         content:'您选择的审批操作为“回退”，流程将返回给上一级操作',
                         onConfirm(){
-                            self.doActions(apiConfig.BackSpaceAction,4,0);
+                            self.doActions(apiConfig.BackSpaceAction,{actId: 4, attitude: 0});
                         },
                     });
                     break;
                 case '13': // 知会
                     this.$router.push({name:'NotifyUser'});
                     break;
+                case '14': // 转存待办
+                    this.$vux.confirm.show({
+                        title:'请确认审批操作',
+                        content:'您选择的审批操作为“转存待办”',
+                        onConfirm(){
+                            self.doActions(apiConfig.Trans2Standby+self.flowInstanceId, {remark: self.comment});
+                        },
+                    });
+                    break;
             }
         },
-        doActions(url,actId,attitude){
-            var self = this;
+        doActions(url, params){ //params > {key:value} ,actId,attitude,
+            let self = this;
             let param = new URLSearchParams();
             param.append("flowId", self.flowId);
             param.append("flowInstanceId", self.flowInstanceId);
             param.append("stepId", self.stepId);
             param.append("content", self.comment);
-            param.append("actId", actId);
             param.append('jumpStepId',0);
-            if(attitude){
-                param.append("attitude", attitude);
+            for(let key in params){
+                param.append(key, params[key]);
             }
             axios.post(apiConfig.companyServer + url,param)
                 .then(res=>{
-                    this.$vux.toast.show({
-                        text: '操作成功'
-                    })
-                    setTimeout(()=>{
-                        self.$router.push({name:'Flow'});
-                    },500)
+                    if(res.data.Success){
+                        this.$vux.toast.show({
+                            text: '操作成功'
+                        });
+                        setTimeout(()=>{
+                            self.$router.push({name:'Flow'});
+                        },500)
+                    }else{
+                        this.$vux.toast.show({
+                            text: '未知错误，请联系管理员或刷新重试！',
+                            type: 'warn'
+                        });
+                    }
                 }).catch(err=>{
                     console.log(err);
-                })
+                });
         },
     },
     beforeMount(){
-        var self = this;
-        this.flowId = globalData.flow.flowId;
-        this.flowInstanceId = globalData.flow.flowInstanceId;
-        this.stepId = globalData.flow.stepId;
-        this.actList = globalData.flow.actList;
+
+        const self = this,initData = JSON.parse(globalData.getStorage('curFlowContentInfo').data);
+        const commentWord = this.$route.query.data.stepRemark||initData.stepRemark;
+        console.log(initData)
+        this.comment = commentWord.replace(/<[^>]+>/g, '');
+        this.flowId = globalData.flow.flowId || initData.flowId;
+        this.flowInstanceId = globalData.flow.flowInstanceId || initData.flowInstanceId;
+        this.stepId = globalData.flow.stepId || initData.stepId;
+        this.actList = globalData.flow.actList || initData.actList;
+
         if(this.actList.length == 1 || this.actList.length == 2){
             this.mainAct = this.actList;
         }else if(this.actList.length > 2){
@@ -201,10 +222,10 @@ export default {
             this.$vux.toast.show({
                 text: '该流程已结束',
                 type: 'warn',
-            })
+            });
             setTimeout(()=>{
                 self.$router.push({name:'Flow'});
-            },2000)
+            },2000);
         }
     },
     components:{

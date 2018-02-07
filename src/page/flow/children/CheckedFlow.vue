@@ -62,20 +62,20 @@ export default {
                 });
             }
             this.currentPage += 1;
-            axios.get(apiConfig.companyServer + apiConfig.flowData.pageUrl
-                + '?type='+this.type+'&userId=' + globalData.user.guid
-                + '&current=' + this.currentPage
-                + '&pageSize=' + this.pageSize)
+            if(globalData.beforeLoadCheckUser()) {
+                axios.get(apiConfig.companyServer + apiConfig.flowData.pageUrl
+                    + '?type='+this.type+'&userId=' + globalData.user.guid
+                    + '&current=' + this.currentPage
+                    + '&pageSize=' + this.pageSize)
                 .then(res=>{
                     if(res.data.length == 0){
-                        this.allLoaded = true;
-                    }
-                    else{
+                      this.allLoaded = true;
+                    } else{
                         if(refresh){
-                            this.flowData = res.data;
-                            this.allLoaded = false;
+                          this.flowData = res.data;
+                          this.allLoaded = false;
                         } else{
-                            this.flowData = this.flowData.concat(res.data);
+                          this.flowData = this.flowData.concat(res.data);
                         }
 
                         this.$nextTick(()=>{
@@ -93,7 +93,8 @@ export default {
                     this.loading = false;
                     this.$vux.loading.hide();
                     this.$refs.loadmore.onTopLoaded();
-                })
+                });
+            }
         },
         goFlowContent(tableName,referFieldName,referFieldValue){
             this.$router.push({name:'FlowContent',
