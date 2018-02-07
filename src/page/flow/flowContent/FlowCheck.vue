@@ -153,7 +153,7 @@ export default {
                 case '13': // 知会
                     this.$router.push({name:'NotifyUser'});
                     break;
-                case '14': // 转存待办
+                case '14': //  转存待办
                     this.$vux.confirm.show({
                         title:'请确认审批操作',
                         content:'您选择的审批操作为“转存待办”',
