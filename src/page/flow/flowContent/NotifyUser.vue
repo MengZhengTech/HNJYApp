@@ -1,6 +1,6 @@
 <template>
     <div class="fullScreen">
-        <HeaderBar title="选择知会人员" :customLeft="true">
+        <HeaderBar title="选择转发人员" :customLeft="true">
             <span slot="customLeft" @click="goBack">
                 <i class="left-arrow"></i>
                 <span class="back">返回</span>
@@ -9,20 +9,27 @@
         <BodyContent>
             <div slot="content">
                 <div class="comment">
-                    <group title="填写知会意见：">
+                    <group title="填写转发意见：">
                         <x-textarea v-model="comment" :max="200" :show-counter="false" :height="200"></x-textarea>
                     </group>
                 </div>
                 <div class="mt1" v-if="users.length > 0">
                     <ul>
-                        <li class="fl" v-for="(item,index) in users" :key="index">{{item.userName}}</li>
+                        <li class="fl" v-for="(item,index) in users" :key="index">
+                            <popover placement="top" :gutter="8">
+                                <div slot="content" class="popover-content" @click="deleteGivenUser(item)" >
+                                    删除
+                                </div>
+                                <span>{{item.userName}}</span>
+                            </popover>
+                        </li>
                     </ul>
                 </div>
                 
                 <div class="mt2">
                     <x-button @click.native="showSearchBar" style="border-radius:99px;">
                         <i class="fa fa-plus"></i>
-                        选择知会人员
+                        选择转发人员
                     </x-button>
                 </div>
                 <div class="fixedBottom">
@@ -31,7 +38,7 @@
                             <x-button type="warn" 
                              @click.native="submitNotify"
                              :disabled="users.length > 0?false:true">
-                                确认知会
+                                确认转发
                             </x-button>
                         </flexbox-item>
                     </flexbox>
@@ -53,16 +60,16 @@ import SelectUser from './SelectUser.vue'
 import apiConfig from '../../../server/apiConfig';
 import axios from 'axios';
 import globalData from '../../../server/globalData'
-import { Group,XTextarea,XButton,Flexbox,FlexboxItem  } from 'vux'
+import { Group,XTextarea,XButton,Flexbox,FlexboxItem,Popover  } from 'vux'
 export default {
     data(){
         return{
             actType:13,
             userSelectModal:false,
-            users:[], // 知会人员
+            users:[], // 转发人员
             FlowId:null,
             FlowInstanceId:null,
-            givenUserIds:null,  // 知会人员ID
+            givenUserIds:null,  // 转发人员ID
             grantUserId:null,
             comment:'',
         }
@@ -90,6 +97,13 @@ export default {
                     }
                 })
             }
+        },
+        deleteGivenUser:function(item){
+            this.users.forEach((i,index)=>{
+                if(i.userId == item.userId){
+                    this.users.splice(index,1);
+                }
+            })
         },
         submitNotify(){
             var IdsArr = [];
@@ -131,7 +145,8 @@ export default {
         XTextarea,
         XButton,
         Flexbox,
-        FlexboxItem
+        FlexboxItem,
+        Popover
     }
 }
 </script>
@@ -152,5 +167,8 @@ export default {
         color: #fff;
         padding: 0.2rem 0.5rem;
         border-radius: 0.8rem;
+    }
+    .popover-content{
+        padding: 0.1rem;
     }
 </style>

@@ -97,14 +97,16 @@ export default {
             }
         },
         goFlowContent(tableName,referFieldName,referFieldValue){
+            const queryData = {
+                tableName:tableName,
+                referFieldName:referFieldName,
+                referFieldValue:referFieldValue,
+                type:this.type
+            };
+            globalData.setStorage("curFlowInfo",queryData,true);
             this.$router.push({name:'FlowContent',
-                query:{
-                    tableName:tableName,
-                    referFieldName:referFieldName,
-                    referFieldValue:referFieldValue,
-                    type:this.type
-                }
-            })
+                query: queryData
+            });
         },
         loadTop(){
             this.currentPage = 0;

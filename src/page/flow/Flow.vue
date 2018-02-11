@@ -54,16 +54,24 @@ export default {
     },
     beforeMount(){
         globalData.tabSelected = this.tabSelected;
+        var localUserInfo = globalData.getStorage('userInfo').data;
         if(this.$route.query.guid && globalData.isWebView){
             let loginUser = globalData.user;
             loginUser.guid = this.$route.query.guid;
             loginUser.userId = this.$route.query.userId;
             loginUser.name = this.$route.query.name;
-            console.log('路劲上的数据');
+            console.log('路径上的数据');
             console.log(loginUser);
             globalData.setStorage('userInfo',loginUser);
-        } else if(globalData.isWebView){ // 检查是否有数据
-            this.$router.push({name:'Login'});
+        }
+        else if(localUserInfo.guid && globalData.isWebView){
+            let loginUser = globalData.user;
+            loginUser.guid = localUserInfo.guid;
+            loginUser.userId = localUserInfo.userId;
+            loginUser.name = localUserInfo.name;
+        }
+        else if(globalData.isWebView){ // 检查是否有数据
+            //this.$router.push({name:'Login'});
             // console.log("没有获取到用户guid");
             // console.log(this.$route.query)
         }

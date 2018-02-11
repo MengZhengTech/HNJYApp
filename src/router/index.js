@@ -29,7 +29,6 @@ const router = new Router({
     },
     {
       path:'/',     // 路由默认页
-      name:'Flow',
       component:Flow,
       redirect:'/Index/Flow'
     },

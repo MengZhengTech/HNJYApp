@@ -33,6 +33,25 @@
                             @listenToToggleComment="syncToggleComment"
                         />
                     </div>
+                    <actionsheet 
+                    v-model="rejectShow" 
+                    :menus="rejectMenu" 
+                    @on-click-menu="rejectAct"
+                    show-cancel >
+                        <div slot="header">
+                            <p v-html="rejectTitle" style="font-size:1rem;font-weight:bold;color:#C30D23;"></p>
+                            <p v-if="rejectUserInfo" style="font-size:0.8rem;color:gray;">
+                                （即将驳回给 <span style="font-weight:bold;">{{rejectUserInfo.flowPosName+' '+rejectUserInfo.userName}}</span>）
+                            </p>
+                        </div>
+                    </actionsheet>
+                    <div v-if="rejectUserModal">
+                        <RejectUser 
+                            :flowInstanceId="flowInstanceId"
+                            @listenRejectUser="getRejectUserFromChild"
+                            @listenToToggleRejectUser="syncToggleRejectUser"
+                        />
+                    </div>
                 </div>
             </BodyContent>
         </div>
@@ -46,7 +65,8 @@ import axios from 'axios'
 import globalData from '../../../server/globalData'
 import SelectUser from './SelectUser.vue';
 import FlowComment from './FlowComment';
-import { Group,XTextarea,XButton,Flexbox,FlexboxItem,Popup,Actionsheet  } from 'vux'
+import RejectUser from './rejectUser';
+import { Group,XTextarea,XButton,Flexbox,FlexboxItem,Popup,Actionsheet,PopupPicker  } from 'vux'
 export default {
     data(){
         return {
@@ -57,6 +77,12 @@ export default {
             mainAct:[],
             moreAct:[],
             actMenu:{},
+            rejectShow:false,
+            rejectMenu:['是','否'],
+            rejectTitle:'驳回的节点是否在通过后直接返回本人？',
+            rejectUserModal:false,
+            rejectUserInfo:null,
+            jumpStepId:0,
             // tableName:null,
             // referFieldName:null,
             // referFieldValue:null,
@@ -90,13 +116,19 @@ export default {
                 })
             }
         },
+        getRejectUserFromChild(data){
+            this.rejectUserInfo = data;
+            this.rejectShow = !this.rejectShow;
+        },
         syncToggleComment(newState){
             this.flowCommentModal = newState;
+        },
+        syncToggleRejectUser(newState){
+            this.rejectUserModal = newState;
         },
         operation(type,item){
             var self = this;
             type = type + '';
-            // console.log(typeof type);
             switch(type){
                 case '1': // 会签确认
                     self.doActions(apiConfig.doAction,{actId: 2, attitude: 1});
@@ -111,13 +143,17 @@ export default {
                     });
                     break;
                 case '3': // 驳回
-                    this.$vux.confirm.show({
-                        title:'请确认审批操作',
-                        content:'您选择的审批操作为“驳回”',
-                        onConfirm(){
-                            self.doActions(apiConfig.doAction,{actId: 4, attitude: 0})
-                        },
-                    });
+                    // this.$vux.confirm.show({
+                    //     title:'请确认审批操作',
+                    //     content:'您选择的审批操作为“驳回”',
+                    //     onConfirm(){
+                    //         self.doActions(apiConfig.doAction,{actId: 4, attitude: 0})
+                    //     },
+                    // });
+                    globalData.flow.actId = 0;
+                    this.actType = 3;
+                    //this.userSelectModal = !this.userSelectModal;
+                    this.rejectUserModal = !this.rejectUserModal;
                     break;
                 case '4': // 集团驳回
                     break;
@@ -126,12 +162,12 @@ export default {
                     this.actType = 5;
                     this.userSelectModal = !this.userSelectModal;
                     break;
-                case '7': // 终止
+                case '7': // 不同意
                     this.$vux.confirm.show({
                         title:'请确认审批操作',
-                        content:'您选择的审批操作为“终止”',
+                        content:'确定不同意并终止流程吗',
                         onConfirm(){
-                            self.doActions(apiConfig.ForceCompleteInstance,{actId: 0});
+                            self.doActions(apiConfig.ForceAbandonInstance,{actId: 0});
                         },
                     });
                     break;
@@ -153,10 +189,10 @@ export default {
                 case '13': // 知会
                     this.$router.push({name:'NotifyUser'});
                     break;
-                case '14': //  转存待办
+                case '14': // 暂存待办
                     this.$vux.confirm.show({
                         title:'请确认审批操作',
-                        content:'您选择的审批操作为“转存待办”',
+                        content:'您选择的审批操作为“暂存待办”',
                         onConfirm(){
                             self.doActions(apiConfig.Trans2Standby+self.flowInstanceId, {remark: self.comment});
                         },
@@ -171,7 +207,12 @@ export default {
             param.append("flowInstanceId", self.flowInstanceId);
             param.append("stepId", self.stepId);
             param.append("content", self.comment);
-            param.append('jumpStepId',0);
+            if(self.jumpStepId > 0){
+                param.append('jumpStepId',self.jumpStepId);
+            }
+            else{
+                param.append('jumpStepId',0);
+            }
             for(let key in params){
                 param.append(key, params[key]);
             }
@@ -194,13 +235,22 @@ export default {
                     console.log(err);
                 });
         },
+        rejectAct(key,item){
+            var self = this;
+            self.jumpStepId = self.rejectUserInfo.stepId;
+            if(item == '是'){
+                self.doActions(apiConfig.doAction,{actId: self.rejectUserInfo.backToLaunchActId, attitude: 0,stepId:self.stepId,})
+            }
+            else if(item == '否'){
+                self.doActions(apiConfig.doAction,{actId: 9, attitude: 0,stepId:self.stepId})
+            }
+        }
     },
     beforeMount(){
 
         const self = this,initData = JSON.parse(globalData.getStorage('curFlowContentInfo').data);
         const commentWord = this.$route.query.data.stepRemark||initData.stepRemark;
-        console.log(initData)
-        this.comment = commentWord.replace(/<[^>]+>/g, '');
+        this.comment = commentWord.replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' ');
         this.flowId = globalData.flow.flowId || initData.flowId;
         this.flowInstanceId = globalData.flow.flowInstanceId || initData.flowInstanceId;
         this.stepId = globalData.flow.stepId || initData.stepId;
@@ -233,13 +283,15 @@ export default {
         BodyContent,
         SelectUser,
         FlowComment,
+        RejectUser,
         Group,
         XTextarea,
         XButton,
         Flexbox,
         FlexboxItem,
         Popup,
-        Actionsheet
+        Actionsheet,
+        PopupPicker
     }
 }
 </script>

@@ -149,13 +149,15 @@ export default {
                 text: '加载中'
             });
             this.loading = true;
+            // console.log(this.tableName)
+            // console.log(this.referFieldValue)
             axios.get(apiConfig.companyServer + apiConfig.flowContent.pageUrl
                     + '?tableName='+this.tableName
                     +'&referFieldName=' + this.referFieldName
                     +'&referFieldValue='+this.referFieldValue
                     +'&userId=' + globalData.user.guid)
                 .then(res=>{
-                    console.log(res);
+                    console.log(res)
                     this.flowContent = res.data;
                     this.actList = res.data.actList;
                     this.flowId = res.data.flowId;
@@ -193,7 +195,6 @@ export default {
                     "&referFieldValue="+this.flowContent.referFieldValue +
                     "&structId="+item.keyValue)
                 .then((res)=>{
-                    console.log(res);
                     this.curFolderFiles = res.data;
                     this.$vux.loading.hide();
                 }).catch((msg)=>{
@@ -294,7 +295,6 @@ export default {
                     "&referFieldValue="+this.flowContent.referFieldValue +
                     "&structId="+lastFolder.structId)
                 .then((res)=>{
-                    console.log(res.data);
                     this.curFolderFiles = res.data;
                     this.$vux.loading.hide();
                 }).catch((msg)=>{
@@ -323,11 +323,12 @@ export default {
     },
     beforeMount(){
         const initData = JSON.parse(globalData.getStorage('curFlowInfo').data);
-
+        
         this.tableName = this.$route.query.tableName || initData.tableName;
         this.referFieldName = this.$route.query.referFieldName || initData.referFieldName;
         this.referFieldValue = this.$route.query.referFieldValue || initData.referFieldValue;
         this.type = this.$route.query.type || initData.type;
+        
         if(globalData.beforeLoadCheckUser()){
             this.getFlowContent();
         }

@@ -5,12 +5,12 @@
 const useStaticData = false;
 const serverDebug = 'http://192.168.1.19:8000/';
 const serverRelease = 'http://192.168.1.178:9012/';
-const companyServer = 'https://bird.ioliu.cn/v1/?url=http://61.136.122.228:82/'; //建业正式地址
-//const companyServer = 'http://192.168.1.159:9023/';
-//const companyServer = '/api';
+// const companyServer = 'https://bird.ioliu.cn/v1/?url=http://61.136.122.228:82/'; //建业正式地址
+// const companyServer = 'http://192.168.1.115:9023/';
+const companyServer = '/api';
 //const companyServer = 'https://bird.ioliu.cn/v1/?url=http://192.168.1.115:9023/';
-//const webViewServer = 'http://192.168.1.115:9023/';  // 测试
-const webViewServer = 'http://61.136.122.228:82/';  // 正式
+const webViewServer = 'http://192.168.1.115:9023/';  // 测试
+// const webViewServer = 'http://61.136.122.228:82/';  // 正式
 
 /**
  *  build时需要更改本页的 companyServer  webViewServer 切换为正式的数据
@@ -54,9 +54,11 @@ export default {
     },
     selectUserGroup: '/Home/GetFlowPosition', // 参数 flowInstanceId
     searchSysUser: '/home/SearchSysUserList', // 参数 keyWord  GET请求
+    GetDoneUserList:'/home/GetDoneUserList', // 获取流程已审人员，用于回退操作，参数 flowInstanceId
 
     doAction:'/Home/DoAction', // 部分操作接口 attitude: 1,  动作的属性值：1（已阅2，通过1，不通过0）
-    ForceCompleteInstance:'/Home/ForceCompleteInstance', // 终止流程
+    //ForceCompleteInstance:'/Home/ForceCompleteInstance', // 终止流程
+    ForceAbandonInstance:'/Home/ForceAbandonInstance/', // 不同意并终止流程
     AddCounterSignStep:'/Home/AddCounterSignStep', // 当前会签
     AddAuditStep:'/Home/AddAuditStep', // 加签
     TurnOnToUser:'/Home/TurnOnToUser/', // 转办
