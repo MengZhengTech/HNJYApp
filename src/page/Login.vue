@@ -73,7 +73,7 @@
                             guid: data.guid,
                         };
                         globalData.setStorage('userInfo',data);
-                        this.$router.push({name:'Flow'});
+                        this.$router.push({name:'Flow',query:{guid:data.guid,userId:data.userId,name:data.name}});
                     }else{
                         this.$vux.toast.text(data.Message, 'bottom');
                     }
