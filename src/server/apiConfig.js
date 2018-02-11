@@ -5,12 +5,12 @@
 const useStaticData = false;
 const serverDebug = 'http://192.168.1.19:8000/';
 const serverRelease = 'http://192.168.1.178:9012/';
-// const companyServer = 'https://bird.ioliu.cn/v1/?url=http://61.136.122.228:82/'; //建业正式地址
+const companyServer = 'https://bird.ioliu.cn/v1/?url=http://61.136.122.228:82/'; //建业正式地址
 // const companyServer = 'http://192.168.1.115:9023/';
-const companyServer = '/api';
+// const companyServer = '/api';
 //const companyServer = 'https://bird.ioliu.cn/v1/?url=http://192.168.1.115:9023/';
-const webViewServer = 'http://192.168.1.115:9023/';  // 测试
-// const webViewServer = 'http://61.136.122.228:82/';  // 正式
+// const webViewServer = 'http://192.168.1.115:9023/';  // 测试
+const webViewServer = 'http://61.136.122.228:82/';  // 正式
 
 /**
  *  build时需要更改本页的 companyServer  webViewServer 切换为正式的数据
