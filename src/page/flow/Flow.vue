@@ -1,7 +1,7 @@
 <template>
     <div class="fullScreen">
-        <HeaderBar title="审批中心"></HeaderBar>
-        <BodyContent :showBottomPadding="true">
+        <!-- <HeaderBar title="审批中心"></HeaderBar> -->
+        <BodyContent :showTopPadding="false" :showBottomPadding="false">
             <div slot="content" class="fullScreen">
                 <tab v-model="tabIndex">
                     <tab-item @on-item-click="changeFlowItem">待审流程</tab-item>
@@ -34,12 +34,15 @@ import CheckedFlow from '@/page/flow/children/CheckedFlow';
 import UncheckedFlow from '@/page/flow/children/UncheckedFlow';
 import UnsentFlow from '@/page/flow/children/UnsentFlow';
 import SentFlow from '@/page/flow/children/SentFlow';
-import { Tab, TabItem, Swiper, SwiperItem } from 'vux'
+import { Tab, TabItem, Swiper, SwiperItem } from 'vux';
+import apiConfig from '../../server/apiConfig';
+import axios from 'axios';
 
 export default {
     data(){
         return {
-            tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
+            // tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
+            tabIndex:0,
             tabSelected:1
         }
     },
@@ -59,16 +62,36 @@ export default {
             let loginUser = globalData.user;
             loginUser.guid = this.$route.query.guid;
             loginUser.userId = this.$route.query.userId;
-            loginUser.name = this.$route.query.name;
-            console.log('路径上的数据');
-            console.log(loginUser);
+            loginUser.name = this.$route.query.loginName;
+            loginUser.pwd = this.$route.query.loginPwd;
             globalData.setStorage('userInfo',loginUser);
+            //  模拟登录
+            let param = new URLSearchParams();
+                param.append("userName", loginUser.name);
+                param.append("passWord", loginUser.pwd);
+                axios.post(apiConfig.companyServer + apiConfig.login,param ).then((response)=>{
+                    let data = response.data;
+                    if(data.state === 1){
+                        globalData.isLogin = true;
+                        globalData.user={
+                            userId: data.userId, // 用户Id
+                            name: data.name,  // 用户名
+                            loginName: data.loginName,
+                            guid: data.guid,
+                        };
+                        globalData.setStorage('userInfo',data);
+                    }else{
+                        this.$vux.toast.text(data.Message, 'bottom');
+                    }
+                }).catch(error=>{
+                });
         }
         else if(localUserInfo.guid && globalData.isWebView){
             let loginUser = globalData.user;
             loginUser.guid = localUserInfo.guid;
             loginUser.userId = localUserInfo.userId;
-            loginUser.name = localUserInfo.name;
+            loginUser.name = localUserInfo.loginName;
+            loginUser.pwd = localUserInfo.loginPwd;
         }
         else if(globalData.isWebView){ // 检查是否有数据
             //this.$router.push({name:'Login'});

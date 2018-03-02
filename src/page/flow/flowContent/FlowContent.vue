@@ -1,6 +1,6 @@
 <template>
     <div class="fullScreen">
-        <HeaderBar title="审批中心" :showBackBtn="true"></HeaderBar>
+        <!-- <HeaderBar title="审批中心" :showBackBtn="true"></HeaderBar> -->
         <FlowTemplate v-if="!loading">
             <div slot="flowInfo" v-if="flowContent.showFields.length > 0">
                 <group class="weui-group p-flowInfoContent">

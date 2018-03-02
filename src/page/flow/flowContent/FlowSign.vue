@@ -1,7 +1,7 @@
 <template>
   <div>
-      <HeaderBar title="选择加签人员" :showBackBtn="true" ></HeaderBar>
-      <BodyContent :showBottomPadding="true">
+      <!-- <HeaderBar title="选择加签人员" :showBackBtn="true" ></HeaderBar> -->
+      <BodyContent :showTopPadding="false" :showBottomPadding="true">
           <div slot="content">
               <SelectUserItemComponent
                   v-for="(item,index) in groupList" :itemVisible="!!item.itemVisible"

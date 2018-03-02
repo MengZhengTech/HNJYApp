@@ -1,8 +1,8 @@
 <template>
     <div class="fullScreen">
-        <HeaderBar title="审批中心" :showBackBtn="true"></HeaderBar>
+        <!-- <HeaderBar title="审批中心" :showBackBtn="true"></HeaderBar> -->
         <div class="fullScreen" v-if="!loading">
-            <BodyContent>
+            <BodyContent :showTopPadding="false">
                 <div slot="content">
                     <div class="comment">
                         <group title="填写审批意见：">
@@ -162,6 +162,9 @@ export default {
                     this.actType = 5;
                     this.userSelectModal = !this.userSelectModal;
                     break;
+                case '6':
+                    self.doActions(apiConfig.CirculateComplete + '/' + self.flowInstanceId,{actId: 0})
+                    break;
                 case '7': // 不同意
                     this.$vux.confirm.show({
                         title:'请确认审批操作',
@@ -239,10 +242,10 @@ export default {
             var self = this;
             self.jumpStepId = self.rejectUserInfo.stepId;
             if(item == '是'){
-                self.doActions(apiConfig.doAction,{actId: self.rejectUserInfo.backToLaunchActId, attitude: 0,stepId:self.stepId,})
+                self.doActions(apiConfig.doAction,{actId: self.rejectUserInfo.backToLaunchActId, attitude: 0})
             }
             else if(item == '否'){
-                self.doActions(apiConfig.doAction,{actId: 9, attitude: 0,stepId:self.stepId})
+                self.doActions(apiConfig.doAction,{actId: 9, attitude: 0})
             }
         }
     },
@@ -255,7 +258,7 @@ export default {
         this.flowInstanceId = globalData.flow.flowInstanceId || initData.flowInstanceId;
         this.stepId = globalData.flow.stepId || initData.stepId;
         this.actList = globalData.flow.actList || initData.actList;
-
+        console.log(this.actList)
         if(this.actList.length == 1 || this.actList.length == 2){
             this.mainAct = this.actList;
         }else if(this.actList.length > 2){

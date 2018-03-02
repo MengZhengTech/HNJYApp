@@ -1,12 +1,12 @@
 <template>
     <div class="fullScreen">
-        <HeaderBar title="选择转发人员" :customLeft="true">
+        <!-- <HeaderBar title="选择转发人员" :customLeft="true">
             <span slot="customLeft" @click="goBack">
                 <i class="left-arrow"></i>
                 <span class="back">返回</span>
             </span>
-        </HeaderBar>
-        <BodyContent>
+        </HeaderBar> -->
+        <BodyContent :showTopPadding="false">
             <div slot="content">
                 <div class="comment">
                     <group title="填写转发意见：">

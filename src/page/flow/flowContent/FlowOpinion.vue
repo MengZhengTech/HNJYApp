@@ -1,7 +1,7 @@
 <template>
     <div>
-        <HeaderBar title="审批意见" :showBackBtn="true"></HeaderBar>
-        <BodyContent :showBottomPadding="false">
+        <!-- <HeaderBar title="审批意见" :showBackBtn="true"></HeaderBar> -->
+        <BodyContent :showTopPadding="false" :showBottomPadding="false">
             <div v-if="loaded" slot="content">
                 <TimeLine>
                     <TimeLineItem

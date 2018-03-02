@@ -1,5 +1,5 @@
 <template>
-    <BodyContent>
+    <BodyContent :showTopPadding="false">
         <div slot="content">
             <slot name="flowInfo"></slot>
             <slot name="flowAttachment"></slot>
