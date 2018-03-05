@@ -116,6 +116,7 @@ export default {
             flowId: null,   // 流程Id
             flowInstanceId: null,   // 流程实例Id
             stepId:null,    // 当前步骤Id
+            backToRefuserStepId:null,   // 驳回流程Id
             type: null, // 判断流程状态 1.已审 2.未审 3.已发 4.未发
             loading: false,
             showPopup: false, // 是否显示弹窗
@@ -163,6 +164,7 @@ export default {
                     this.flowId = res.data.flowId;
                     this.flowInstanceId = res.data.flowInstanceId;
                     this.stepId = res.data.stepId;
+                    this.backToRefuserStepId = res.data.backToRefuserStepId;
                     this.loading = false;
                     this.$vux.loading.hide();
                     globalData.setStorage('curFlowContentInfo', res.data, true);
@@ -226,6 +228,7 @@ export default {
             globalData.flow.flowId = this.flowId;
             globalData.flow.flowInstanceId = this.flowInstanceId;
             globalData.flow.stepId = this.stepId;
+            globalData.flow.backToRefuserStepId = this.backToRefuserStepId;
             this.$router.push({name:'FlowCheck',query:{data:this.flowContent}});
         },
         startFlow(){

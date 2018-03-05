@@ -89,6 +89,7 @@ export default {
             flowId: null,   // 流程Id
             flowInstanceId: null,   // 流程实例Id
             stepId:null,    // 当前步骤Id
+            backToRefuserStepId:null,   // 驳回流程Id
             actType:null,
             comment:'',     // 审批意见
             flowContentData: '',
@@ -138,7 +139,7 @@ export default {
                         title:'请确认审批操作',
                         content:'您选择的审批操作为“通过”',
                         onConfirm(){
-                            self.doActions(apiConfig.doAction,{actId: 3, attitude: 1})
+                            self.doActions(apiConfig.doAction,{actId: 3, attitude: 1});
                         },
                     });
                     break;
@@ -162,7 +163,7 @@ export default {
                     this.actType = 5;
                     this.userSelectModal = !this.userSelectModal;
                     break;
-                case '6':
+                case '6': // 提交
                     self.doActions(apiConfig.CirculateComplete + '/' + self.flowInstanceId,{actId: 0})
                     break;
                 case '7': // 不同意
@@ -210,8 +211,9 @@ export default {
             param.append("flowInstanceId", self.flowInstanceId);
             param.append("stepId", self.stepId);
             param.append("content", self.comment);
-            if(self.jumpStepId > 0){
-                param.append('jumpStepId',self.jumpStepId);
+            param.append("remark", self.comment);
+            if(parseInt(self.backToRefuserStepId) > 0){
+                param.append('jumpStepId',parseInt(self.backToRefuserStepId));
             }
             else{
                 param.append('jumpStepId',0);
@@ -257,8 +259,8 @@ export default {
         this.flowId = globalData.flow.flowId || initData.flowId;
         this.flowInstanceId = globalData.flow.flowInstanceId || initData.flowInstanceId;
         this.stepId = globalData.flow.stepId || initData.stepId;
+        this.backToRefuserStepId = globalData.flow.backToRefuserStepId || initData.backToRefuserStepId;
         this.actList = globalData.flow.actList || initData.actList;
-        console.log(this.actList)
         if(this.actList.length == 1 || this.actList.length == 2){
             this.mainAct = this.actList;
         }else if(this.actList.length > 2){
@@ -268,6 +270,7 @@ export default {
                 this.actMenu[item.type] = item.name;
             }, this);
         }
+        console.log(this.actList)
     },
     mounted(){
         if(this.actList.length <= 0){

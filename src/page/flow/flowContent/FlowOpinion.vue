@@ -14,7 +14,8 @@
                             <div class="p-createTime">{{item.createDate}}</div>
                         </div>
                         <div class="p-preStepName" v-if="item.approvalUser||item.preStepName">{{item.approvalUser}} - {{item.preStepName}}</div>
-                        <div class="p-flowContent">{{item.content.replace(/<[^>]+>/g, '').replace('&nbsp;', '')}}</div>
+                        <div class="p-flowResult">{{item.result.replace(/<[^>]+>/g, '').replace('&nbsp;', '')}}</div>
+                        <div class="p-flowContent">{{item.content.replace(/<[^>]+>/g, '').replace('&nbsp;', '') == '会签确认'?'同意':item.content.replace(/<[^>]+>/g, '').replace('&nbsp;', '')}}</div>
                     </TimeLineItem>
                 </TimeLine>
             </div>
@@ -99,6 +100,11 @@ export default {
       margin-top: 5px;
       font-size: 14px;
       color: #cccccc;
+  }
+  .p-flowResult{
+      margin-top: 5px;
+      font-size: 14px;
+      color: #B72B21;
   }
 </style>
 
