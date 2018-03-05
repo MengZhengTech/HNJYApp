@@ -216,7 +216,12 @@ export default {
                 param.append('jumpStepId',parseInt(self.backToRefuserStepId));
             }
             else{
-                param.append('jumpStepId',0);
+                if(parseInt(self.jumpStepId) > 0){
+                    param.append('jumpStepId',self.jumpStepId);
+                }
+                else{
+                    param.append('jumpStepId',0);
+                }
             }
             for(let key in params){
                 param.append(key, params[key]);
