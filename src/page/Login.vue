@@ -63,7 +63,7 @@
                 param.append("passWord", this.passWord);
                 axios.post(apiConfig.companyServer + apiConfig.login,param ).then((response)=>{
                     let data = response.data;
-                    console.log(data);
+                    // console.log(data);
                     if(data.state === 1){
                         globalData.isLogin = true;
                         globalData.user={

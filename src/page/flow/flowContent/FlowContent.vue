@@ -144,7 +144,9 @@ export default {
                     let rect = thumbnail.getBoundingClientRect()
                     // w = width
                     return {x: rect.left, y: rect.top + pageYScroll, w: rect.width}
-                }
+                },
+                fullscreenEl: false,    // 图片全屏预览按钮
+                maxSpreadZoom:2     // 图片最大放大倍数
             }
         }
     },
@@ -335,7 +337,51 @@ export default {
         },
     },
     beforeMount(){
-        const initData = JSON.parse(globalData.getStorage('curFlowInfo').data);
+        var localUserInfo = globalData.getStorage('userInfo').data;
+        if(this.$route.query.guid && globalData.isWebView){
+            let loginUser = globalData.user;
+            loginUser.guid = this.$route.query.guid;
+            loginUser.userId = this.$route.query.userId;
+            loginUser.name = this.$route.query.loginName;
+            loginUser.pwd = this.$route.query.loginPwd;
+            globalData.setStorage('userInfo',loginUser);
+            //  模拟登录
+            let param = new URLSearchParams();
+                param.append("userName", loginUser.name);
+                param.append("passWord", loginUser.pwd);
+                axios.post(apiConfig.companyServer + apiConfig.login,param ).then((response)=>{
+                    let data = response.data;
+                    if(data.state === 1){
+                        globalData.isLogin = true;
+                        globalData.user={
+                            userId: data.userId, // 用户Id
+                            name: data.name,  // 用户名
+                            loginName: data.loginName,
+                            guid: data.guid,
+                        };
+                        globalData.setStorage('userInfo',data);
+                    }else{
+                        this.$vux.toast.text(data.Message, 'bottom');
+                    }
+                }).catch(error=>{
+                });
+        }
+        else if(localUserInfo.guid && globalData.isWebView){
+            let loginUser = globalData.user;
+            loginUser.guid = localUserInfo.guid;
+            loginUser.userId = localUserInfo.userId;
+            loginUser.name = localUserInfo.loginName;
+            loginUser.pwd = localUserInfo.loginPwd;
+        }
+        else if(globalData.isWebView){ // 检查是否有数据
+            //this.$router.push({name:'Login'});
+            // console.log("没有获取到用户guid");
+            // console.log(this.$route.query)
+        }
+
+        if(globalData.getStorage('curFlowInfo').data){
+            const initData = JSON.parse(globalData.getStorage('curFlowInfo').data);
+        }
 
         this.tableName = this.$route.query.tableName || initData.tableName;
         this.referFieldName = this.$route.query.referFieldName || initData.referFieldName;

@@ -41,8 +41,8 @@ import axios from 'axios';
 export default {
     data(){
         return {
-            tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
-            //tabIndex:0,
+            // tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
+            tabIndex:0,
             tabSelected:1
         }
     },
@@ -62,11 +62,12 @@ export default {
             let loginUser = globalData.user;
             loginUser.guid = this.$route.query.guid;
             loginUser.userId = this.$route.query.userId;
-            loginUser.name = this.$route.query.loginName;
-            loginUser.pwd = this.$route.query.loginPwd;
-            globalData.setStorage('userInfo',loginUser);
             //  模拟登录
-            let param = new URLSearchParams();
+            if(loginUser.name && loginUser.pwd){
+                loginUser.name = this.$route.query.loginName;
+                loginUser.pwd = this.$route.query.loginPwd;
+
+                let param = new URLSearchParams();
                 param.append("userName", loginUser.name);
                 param.append("passWord", loginUser.pwd);
                 axios.post(apiConfig.companyServer + apiConfig.login,param ).then((response)=>{
@@ -85,6 +86,8 @@ export default {
                     }
                 }).catch(error=>{
                 });
+            }
+            globalData.setStorage('userInfo',loginUser);
         }
         else if(localUserInfo.guid && globalData.isWebView){
             let loginUser = globalData.user;
