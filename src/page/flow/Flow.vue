@@ -41,8 +41,8 @@ import axios from 'axios';
 export default {
     data(){
         return {
-            // tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
-            tabIndex:0,
+            tabIndex:parseInt(globalData.getStorage('flowTabIndex').data)|| 0,
+            //tabIndex:0,
             tabSelected:1
         }
     },

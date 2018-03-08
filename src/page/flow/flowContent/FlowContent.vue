@@ -13,9 +13,11 @@
             <div slot="flowAttachment" v-if="flowContent.fileList.length > 0">
                 <div class="p-title">相关附件</div>
                 <grid :cols="3">
-                    <grid-item class="p-file-grid-item" v-for="(item,index) in flowContent.fileList" :key="index">
-                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file" @click="goFlowAttachment(item)"></i>
-                        <span slot="label">{{item.name + item.ext}}</span>
+                    <grid-item class="p-file-grid-item aa" v-for="(item,index) in flowContent.fileList" :key="index" @on-item-click="handleClickItem(item,$event)">
+                        <!--<div @click="goFlowAttachment(item)">-->
+                            <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file" @click="goFlowAttachment(item)"></i>
+                            <span slot="label" @click="goFlowAttachment(item)">{{item.name + (item.ext=="folder"?"":item.ext)}}</span>
+                        <!--</div>-->
                         <a v-if="canDownload(item)" mini plain class="mt5" :href="item.url">下载</a>
                     </grid-item>
                 </grid>
@@ -63,14 +65,16 @@
         <popup height="100%" v-model="showFilePopup">
             <x-header :left-options="{showBack: false}" style="width:100%;position:absolute;left:0;top:0;z-index:100;">
               {{curFloderName}}
-              <a slot="right" href="javascript:;" @click="closeFilePopup"><i class="fa fa-close"></i></a>
+              <a slot="right" href="javascript:;" @click="closeFilePopup" style="font-size: 24px;"><i class="fa fa-close"></i></a>
             </x-header>
             <BodyContent :showBottomPadding="false">
                 <!--<div v-else slot="content">暂无数据</div>-->
                 <grid :cols="3" slot="content">
-                    <grid-item class="p-file-grid-item" v-for="(item,index) in curFolderFiles" :key="index">
-                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file" @click="goFlowAttachment(item)"></i>
-                        <span slot="label">{{item.name + item.ext}}</span>
+                    <grid-item class="p-file-grid-item" v-for="(item,index) in curFolderFiles" :key="index" @on-item-click="handleClickItem(item,$event)">
+                        <div slot="icon" @click="goFlowAttachment(item)">
+                            <i :class="getFileTypeClass(item.ext)" class="fa p-file"></i>
+                        </div>
+                        <span slot="label">{{item.name + (item.ext=="folder"?"":item.ext)}}</span>
                         <a v-if="canDownload(item)" mini plain class="mt5" :href="item.url">下载</a>
                     </grid-item>
                 </grid>
@@ -84,7 +88,7 @@
             </x-header>
             <BodyContent :showBottomPadding="false">
                 <iframe style="border: none;" width="100%" height="100%" slot="content" v-if="curFileReaderPath" :src="curFileReaderPath" frameborder="0"></iframe>
-                <div v-else slot="content" class="p-no-data-panel">
+                <div v-else slot="content" class="p-no-data-panel" :test="curFileReaderPath">
                     <divider>文件未上传成功！请稍后重试</divider>
                 </div>
             </BodyContent>
@@ -158,7 +162,6 @@ export default {
                     +'&referFieldValue='+this.referFieldValue
                     +'&userId=' + globalData.user.guid)
                 .then(res=>{
-                    console.log(res)
                     this.flowContent = res.data;
                     this.actList = res.data.actList;
                     this.flowId = res.data.flowId;
@@ -223,6 +226,12 @@ export default {
                 });
             }
         },
+        handleClickItem:function(item,event){
+            if(item.ext === "folder"){
+                this.goFlowAttachment(item);
+            }
+            console.log(event);
+        },
         goFlowCheck(){
             globalData.flow.actList = this.actList;
             globalData.flow.flowId = this.flowId;
@@ -281,6 +290,7 @@ export default {
             }
         },
         closeFilePopup:function(){
+            console.log(this.breadPath.join("-"));
             this.breadPath.pop();
             if(this.breadPath.length == 0){
                 this.showFilePopup = false;
@@ -326,12 +336,15 @@ export default {
     },
     beforeMount(){
         const initData = JSON.parse(globalData.getStorage('curFlowInfo').data);
-        
+
         this.tableName = this.$route.query.tableName || initData.tableName;
         this.referFieldName = this.$route.query.referFieldName || initData.referFieldName;
         this.referFieldValue = this.$route.query.referFieldValue || initData.referFieldValue;
         this.type = this.$route.query.type || initData.type;
-        
+
+        if(this.$route.query.guid){
+            globalData.user.guid = this.$route.query.guid;
+        };
         if(globalData.beforeLoadCheckUser()){
             this.getFlowContent();
         }
