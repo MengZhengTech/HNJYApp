@@ -12,8 +12,14 @@
                     <li  v-for="(item,index) in flowData" :key="index">
                         <mt-cell
                         class="flow-cell" :title="item.flowName" :label="item.projName" is-link
-                        @click.native="goFlowContent(item.tableName,item.referFieldName,item.referFieldValue)">
+                        @click.native="goFlowContent(item.tableName,item.referFieldName,item.referFieldValue)"
+                        style="position:relative;">
                             {{item.StartDate}}
+                            <div class="completeStatus">
+                                <img v-if="item.curStatus == '已完成'" :src="completedIcon" />
+                                <img v-else-if="item.curStatus == '审批中'" :src="uncompletedIcon" />
+                                <img v-else-if="item.curStatus == '未发起'" :src="unsentIcon" />
+                            </div>
                         </mt-cell>
                     </li>
                 </ul>
@@ -47,6 +53,9 @@ export default {
             currentPage:0, // 数据页码
             pageSize:10, // 每页数据量
             loadmore:false, //判断页面底部是否正在加载更多
+            completedIcon:require('../../../assets/images/icons/icon022.png'),
+            uncompletedIcon: require('../../../assets/images/icons/icon001.png'),
+            unsentIcon: require('../../../assets/images/icons/icon003.png'),
         }
     },
     methods:{
@@ -79,8 +88,9 @@ export default {
                         }
 
                         this.$nextTick(()=>{
-                            console.log(this.$refs.loadmore);
-                            this.$refs.loadmore.onTopLoaded();
+                            if(this.$refs.loadmore){
+                                this.$refs.loadmore.onTopLoaded();
+                            }
                         });
                     }
                     this.loadmore = false;
@@ -130,5 +140,9 @@ export default {
 </script>
 
 <style>
-
+    .completeStatus{
+        position: absolute;
+        right: 0rem;
+        top: 0rem;
+    }
 </style>

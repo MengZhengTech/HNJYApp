@@ -18,7 +18,7 @@
                             <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file" @click="goFlowAttachment(item)"></i>
                             <span slot="label" @click="goFlowAttachment(item)">{{item.name + (item.ext=="folder"?"":item.ext)}}</span>
                         <!--</div>-->
-                        <a v-if="canDownload(item)" mini plain class="mt5" :href="item.url">下载</a>
+                        <a v-if="canDownload(item)" mini plain class="mt5 dl-button" :href="item.url" >下载</a>
                     </grid-item>
                 </grid>
             </div>
@@ -75,7 +75,7 @@
                             <i :class="getFileTypeClass(item.ext)" class="fa p-file"></i>
                         </div>
                         <span slot="label">{{item.name + (item.ext=="folder"?"":item.ext)}}</span>
-                        <a v-if="canDownload(item)" mini plain class="mt5" :href="item.url">下载</a>
+                        <a v-if="canDownload(item)" mini plain class="mt5 dl-button" :href="item.url">下载</a>
                     </grid-item>
                 </grid>
             </BodyContent>
@@ -412,6 +412,13 @@ export default {
     }
     .weui-cells{
         margin-top: 0;
+    }
+    .dl-button{
+        font-size:1rem;
+        border:1px solid #1aad19;
+        color:#1aad19;
+        border-radius: 5px;
+        line-height: 1.8rem;
     }
 </style>
 <style>
