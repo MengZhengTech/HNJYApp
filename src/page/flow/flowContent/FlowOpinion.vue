@@ -37,6 +37,9 @@ import axios from 'axios';
 import globalData from '../../../server/globalData';
 
 export default {
+    props:{
+        flowInstanceId:null,
+    },
     data(){
         return {
             flowOptionAry: null,
@@ -54,7 +57,8 @@ export default {
             this.$vux.loading.show({
                 text: '加载中'
             });
-            axios.get(apiConfig.companyServer+apiConfig.commonApproveLogUrl+"?flowInstanceId="+this.$route.query.flowInstanceId).then(res=>{
+            axios.get(apiConfig.companyServer+apiConfig.commonApproveLogUrl+"?flowInstanceId="+this.flowInstanceId).then(res=>{
+            // axios.get(apiConfig.companyServer+apiConfig.commonApproveLogUrl+"?flowInstanceId="+this.$route.query.flowInstanceId).then(res=>{
                 console.log(res);
                 this.flowOptionAry = res.data;
                 this.isLoading = false;

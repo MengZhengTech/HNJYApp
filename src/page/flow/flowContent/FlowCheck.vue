@@ -281,7 +281,7 @@ export default {
         if(this.actList.length <= 0){
             var self = this;
             this.$vux.toast.show({
-                text: '该流程已结束',
+                text: '该流程已结束或请到PC端发起',
                 type: 'warn',
             });
             setTimeout(()=>{
