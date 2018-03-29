@@ -15,7 +15,7 @@
                         </div>
                         <div class="p-preStepName" v-if="item.approvalUser||item.preStepName">{{item.approvalUser}} - {{item.preStepName}}</div>
                         <div class="p-flowResult">{{item.result.replace(/<[^>]+>/g, '').replace('&nbsp;', '')}}</div>
-                        <div class="p-flowContent">{{item.content.replace(/<[^>]+>/g, '').replace('&nbsp;', '') == '会签确认'?'同意':item.content.replace(/<[^>]+>/g, '').replace('&nbsp;', '')}}</div>
+                        <div class="p-flowContent">{{unescape(item.content) == '会签确认'?'同意':unescape(item.content)}}</div>
                     </TimeLineItem>
                 </TimeLine>
             </div>
@@ -52,6 +52,9 @@ export default {
         TimeLine, TimeLineItem, Divider,
     },
     methods:{
+        unescape(str){
+            return decodeURIComponent(str).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, '');
+        },
         fetchData(){
             this.isLoading = true;
             this.$vux.loading.show({
@@ -60,6 +63,7 @@ export default {
             axios.get(apiConfig.companyServer+apiConfig.commonApproveLogUrl+"?flowInstanceId="+this.flowInstanceId).then(res=>{
             // axios.get(apiConfig.companyServer+apiConfig.commonApproveLogUrl+"?flowInstanceId="+this.$route.query.flowInstanceId).then(res=>{
                 console.log(res);
+                
                 this.flowOptionAry = res.data;
                 this.isLoading = false;
                 this.loaded = true;
