@@ -71,6 +71,7 @@ export default {
                     console.log(res)
                     if(res.data.length == 0){
                         this.allLoaded = true;
+                        this.loadmore = true;
                     } else{
                         if(refresh){
                             this.flowData = res.data;
@@ -78,14 +79,14 @@ export default {
                         } else{
                             this.flowData = this.flowData.concat(res.data);
                         }
-
+                        this.loadmore = false;
                         this.$nextTick(()=>{
                             if(this.$refs.loadmore){
                                 this.$refs.loadmore.onTopLoaded();
                             }
                         });
                     }
-                    this.loadmore = false;
+                    
                     this.loading = false;
                     this.$vux.loading.hide();
                 }).catch(err=>{
