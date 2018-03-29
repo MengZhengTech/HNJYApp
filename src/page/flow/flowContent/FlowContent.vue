@@ -16,13 +16,8 @@
                     :inline-desc="item.size">
                     <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file file-icon" @click="goFlowAttachment(item)"></i>
                     <div slot="title" @click="goFlowAttachment(item)">{{item.name}}</div>
-                    <div v-if="canDownload(item) && item.url != ''" class="showMore" @click="showDownload = !showDownload" >·<br/>·<br/>·</div>
-                    <actionsheet 
-                        v-model="showDownload" 
-                        :menus="menus" 
-                        @on-click-menu-download="downloadAct(item.url)"
-                        show-cancel >
-                    </actionsheet>
+                    <div v-if="canDownload(item) && item.url != ''" class="showMore" @click="moreAction(item.url)" >·<br/>·<br/>·</div>
+                    
                 </cell>
                 <!-- <grid :cols="3">
                     <grid-item class="p-file-grid-item aa" v-for="(item,index) in flowContent.fileList" :key="index" @on-item-click="handleClickItem(item,$event)">
@@ -80,22 +75,21 @@
         <popup height="100%" v-model="showFilePopup">
             <x-header :left-options="{showBack: false}" style="width:100%;position:absolute;left:0;top:0;z-index:100;">
               {{curFloderName}}
-              <a slot="right" href="javascript:;" @click="closeFilePopup" style="font-size: 24px;"><i class="fa fa-close"></i></a>
+              <a slot="left" v-if="breadPath.length > 1" href="javascript:;" @click="returnFilePopup" style="font-size: 15px;">
+                  <i class="fa fa-chevron-left"></i>返回上一级
+              </a>
+              <a slot="right" href="javascript:;" @click="closeFilePopup" style="font-size: 18px;"><i class="fa fa-close"></i></a>
             </x-header>
             <BodyContent :showBottomPadding="false">
                 <!--<div v-else slot="content">暂无数据</div>-->
-                <cell v-for="(item,index) in flowContent.fileList" :key="index" @click.native="handleClickItem(item,$event)"
-                    :inline-desc="item.size">
-                    <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file file-icon" @click="goFlowAttachment(item)"></i>
-                    <div slot="title" @click="goFlowAttachment(item)">{{item.name}}</div>
-                    <div v-if="canDownload(item) && item.url != ''" class="showMore" @click="showDownload = !showDownload" >·<br/>·<br/>·</div>
-                    <actionsheet 
-                        v-model="showDownload" 
-                        :menus="menus" 
-                        @on-click-menu-download="downloadAct(item.url)"
-                        show-cancel >
-                    </actionsheet>
-                </cell>
+                <div slot="content">
+                    <cell v-for="(item,index) in curFolderFiles" :key="index" @click.native.self.prevent="handleClickItem(item,$event)"
+                        :inline-desc="item.size">
+                        <i slot="icon" :class="getFileTypeClass(item.ext)" class="fa p-file file-icon" @click.stop="goFlowAttachment(item)"></i>
+                        <div slot="title" @click.stop="goFlowAttachment(item)">{{item.name}}</div>
+                        <div v-if="canDownload(item) && item.url != ''" class="showMore" @click="moreAction(item.url)" >·<br/>·<br/>·</div>
+                    </cell>
+                </div>
             </BodyContent>
         </popup>
         <!-- 附件预览 -->
@@ -111,7 +105,13 @@
                 </div>
             </BodyContent>
         </popup>
-        
+        <!-- 文件更多操作(下载) -->
+        <actionsheet 
+            v-model="showDownload" 
+            :menus="menus" 
+            @on-click-menu-download="downloadAct(url)"
+            show-cancel >
+        </actionsheet>
     </div>
 </template>
 <script>
@@ -148,8 +148,9 @@ export default {
             curFloderName: '',
             curPopupTitle: '附件标题',
             curTableUrl: null,
-            showDownload:false,
-            menus:{
+            showDownload:false, // 是否显示文件更多操作
+            downloadUrl:'', // 文件下载链接
+            menus:{ // 更多操作列表
                 download:'下载'
             },
             picList: [], // 查看附件 图片数组
@@ -255,10 +256,10 @@ export default {
             }
         },
         handleClickItem:function(item,event){
-            if(item.ext === "folder"){
-                this.goFlowAttachment(item);
-            }
-            console.log(event);
+            // if(item.ext === "folder"){
+            //     this.goFlowAttachment(item);
+            // }
+            //console.log(event);
         },
         goFlowCheck(){
             globalData.flow.actList = this.actList;
@@ -317,32 +318,36 @@ export default {
                 return iconClass;
             }
         },
-        closeFilePopup:function(){
-            console.log(this.breadPath.join("-"));
+        returnFilePopup(){  // 浏览文件夹 返回上一级
             this.breadPath.pop();
-            if(this.breadPath.length == 0){
-                this.showFilePopup = false;
-            }else{
-                this.$vux.loading.show({
-                  text: '加载中'
-                });
-                let lastFolder = this.breadPath[this.breadPath.length-1];
+            this.$vux.loading.show({
+                text: '加载中'
+            });
+            let lastFolder = this.breadPath[this.breadPath.length-1];
 
-                this.curFloderName = lastFolder.folderName;
-                axios.get(apiConfig.companyServer+apiConfig.getFolderFile+
-                    "?userId="+globalData.user.guid +
-                    "&tableName="+this.flowContent.tableName +
-                    "&referFieldName="+this.flowContent.referFieldName +
-                    "&referFieldValue="+this.flowContent.referFieldValue +
-                    "&structId="+lastFolder.structId)
-                .then((res)=>{
-                    this.curFolderFiles = res.data;
-                    this.$vux.loading.hide();
-                }).catch((msg)=>{
-                    console.log(err);
-                    this.$vux.loading.hide();
-                });
-            }
+            this.curFloderName = lastFolder.folderName;
+            axios.get(apiConfig.companyServer+apiConfig.getFolderFile+
+                "?userId="+globalData.user.guid +
+                "&tableName="+this.flowContent.tableName +
+                "&referFieldName="+this.flowContent.referFieldName +
+                "&referFieldValue="+this.flowContent.referFieldValue +
+                "&structId="+lastFolder.structId)
+            .then((res)=>{
+                this.curFolderFiles = res.data;
+                this.$vux.loading.hide();
+            }).catch((msg)=>{
+                console.log(err);
+                this.$vux.loading.hide();
+            });
+        },
+        closeFilePopup:function(){  // 浏览文件夹 关闭文件夹弹窗
+            console.log(this.breadPath.join("-"));
+            this.breadPath = [];
+            // if(this.breadPath.length == 0){
+                this.showFilePopup = false;
+            // }else{
+                
+            // }
         },
         // 关闭预览弹窗
         closeFileReaderPopup:function(){
@@ -361,9 +366,12 @@ export default {
         picClose(){
             this.picList = [];
         },
-        downloadAct(download){
-            console.log(download)
+        downloadAct(download){  // 下载操作
             window.location.href = download;
+        },
+        moreAction(url){    // 显示or关闭 更多操作列表(下载)
+            this.showDownload = !this.showDownload;
+            this.downloadUrl = url;
         }
     },
     beforeMount(){
