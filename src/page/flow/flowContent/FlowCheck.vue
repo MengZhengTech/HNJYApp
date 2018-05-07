@@ -233,7 +233,8 @@ export default {
                             text: '操作成功'
                         });
                         setTimeout(()=>{
-                            self.$router.push({name:'Flow'});
+                            //self.$router.push({name:'Flow'});
+                            window.location.href = 'http://zh.jianye.com.cn/sys/notify/mobile/';
                         },500)
                     }else{
                         this.$vux.toast.show({

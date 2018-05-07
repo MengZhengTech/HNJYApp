@@ -9,13 +9,13 @@ const serverDebug = 'http://192.168.1.19:8000/';
 // const companyServer = 'http://192.168.1.115:9023/';
 // const companyServer = 'https://bird.ioliu.cn/v1/?url=http://123.52.55.88:8080/';
 // const companyServer = 'http://192.168.1.7:8030/';
-const companyServer = 'http://123.52.55.88:8080/';
-// const companyServer = 'http://61.136.122.228:82/';
+// const companyServer = 'http://123.52.55.88:8080/';
+const companyServer = 'http://61.136.122.228:82/';
 // const companyServer = '/api';
 // const companyServer = 'https://bird.ioliu.cn/v1/?url=http://192.168.1.115:9023/';
 // const webViewServer = 'http://192.168.1.115:9023/';  // 测试
-const webViewServer = 'http://123.52.55.88:8080/';
-// const webViewServer = 'http://61.136.122.228:82/';  // 正式
+// const webViewServer = 'http://123.52.55.88:8080/';
+const webViewServer = 'http://61.136.122.228:82/';  // 正式
 
 /**
  *  build时需要更改本页的 companyServer  webViewServer 切换为正式的数据
